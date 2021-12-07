@@ -560,6 +560,7 @@ static int hw_output_set_3d_lut(struct hw_output_device* dev, int dpy, uint32_t 
         ALOGE("fail to set 3d lut %d(%s)", ret, strerror(errno));
     if(ret == 0){
         struct cubic_lut_data data;
+        data.size = size;
         for(int i = 0; i< size; i++){
             data.lred[i] = r[i];
             data.lgreen[i] = g[i];
