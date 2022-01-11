@@ -313,6 +313,38 @@ static void updateConnectors(hw_output_private_t *priv){
     }
 }
 
+static int hw_output_update_disp_header(struct hw_output_device *dev)
+{
+    bool found = false;
+    int ret = 0, firstEmptyHeader = -1;
+    hw_output_private_t* priv = (hw_output_private_t*)dev;
+    BaseParameter* mBaseParmeter = priv->mBaseParmeter;
+    struct disp_header * headers = (disp_header *)malloc(sizeof(disp_header) * 8);
+    for (auto &conn : priv->drm_->connectors()) {
+        if(conn->state() == DRM_MODE_CONNECTED){
+            found = false;
+            firstEmptyHeader = -1;
+            ret = mBaseParmeter->get_all_disp_header(headers);
+            if(ret != 0) {
+                break;
+            }
+            for(int i = 0; i < 8; i++){
+                if(headers[i].connector_type == conn->get_type() && headers[i].connector_id == conn->connector_id()){
+                    found = true;
+                }
+                if(firstEmptyHeader == -1 && headers[i].connector_type == 0 && headers[i].connector_id == 0){
+                    firstEmptyHeader = i;
+                }
+            }
+            if(!found){
+                ret = mBaseParmeter->set_disp_header(firstEmptyHeader, conn->get_type(), conn->connector_id());
+            }
+        }
+    }
+    free(headers);
+    return ret;
+}
+
 /*****************************************************************************/
 static void hw_output_save_config(struct hw_output_device* dev){
     hw_output_private_t* priv = (hw_output_private_t*)dev;
@@ -401,6 +433,7 @@ static void hw_output_hotplug_update(struct hw_output_device* dev){
     priv->drm_->ClearDisplay();
 
     updateConnectors(priv);
+    hw_output_update_disp_header(dev);
 }
 
 static int hw_output_init_baseparameter(BaseParameter** mBaseParmeter)
@@ -1027,35 +1060,6 @@ static connector_info_t* hw_output_get_connector_info(struct hw_output_device* d
     *size = i;
     ALOGE("%s:%d i=%d", __FUNCTION__, __LINE__, i);
     return connector_info;
-}
-
-static int hw_output_update_disp_header(struct hw_output_device *dev)
-{
-    bool found = false;
-    int ret = 0, firstEmptyHeader = -1;
-    hw_output_private_t* priv = (hw_output_private_t*)dev;
-    BaseParameter* mBaseParmeter = priv->mBaseParmeter;
-    struct disp_header * headers = (disp_header *)malloc(sizeof(disp_header) * 8);
-    for (auto &conn : priv->drm_->connectors()) {
-        if(conn->state() == DRM_MODE_CONNECTED){
-            found = false;
-            firstEmptyHeader = -1;
-            mBaseParmeter->get_all_disp_header(headers);
-            for(int i = 0; i < 8; i++){
-                if(headers[i].connector_type == conn->get_type() && headers[i].connector_id == conn->connector_id()){
-                    found = true;
-                }
-                if(firstEmptyHeader == -1 && headers[i].connector_type == 0 && headers[i].connector_id == 0){
-                    firstEmptyHeader = i;
-                }
-            }
-            if(!found){
-                ret = mBaseParmeter->set_disp_header(firstEmptyHeader, conn->get_type(), conn->connector_id());
-            }
-        }
-    }
-    free(headers);
-    return ret;
 }
 
 static int hw_output_device_open(const struct hw_module_t* module,
