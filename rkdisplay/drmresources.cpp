@@ -237,7 +237,7 @@ int DrmResources::Init() {
   out << "Connectors:\n";
   out << "id\tencoder\tstatus\t\ttype\tsize (mm)\tmodes\tencoders\n";
   for (int i = 0; !ret && i < res->count_connectors; ++i) {
-    drmModeConnectorPtr c = drmModeGetConnector(fd(), res->connectors[i]);
+    drmModeConnectorPtr c = drmModeGetConnectorCurrent(fd(), res->connectors[i]);
     if (!c) {
       ALOGE("Failed to get connector %d", res->connectors[i]);
       ret = -ENODEV;

@@ -105,7 +105,7 @@ int DrmConnector::UpdateModes() {
   int fd = drm_->fd();
   int ret;
 
-  drmModeConnectorPtr c = drmModeGetConnector(fd, id_);
+  drmModeConnectorPtr c = drmModeGetConnectorCurrent(fd, id_);
   if (!c) {
     ALOGE("Failed to get connector %d", id_);
     return -ENODEV;
