@@ -57,13 +57,22 @@ int DrmConnector::Init() {
     return ret;
   }
 
-  ret = drm_->GetConnectorProperty(*this, "hdmi_output_mode_capacity", &hdmi_output_mode_capacity_);
-  if (ret)
-    ALOGW("Could not get hdmi_output_colorimetry property\n");
-
-  ret = drm_->GetConnectorProperty(*this, "hdmi_color_depth_capacity", &hdmi_color_depth_capacity_);
+  ret = drm_->GetConnectorProperty(*this, "color_format_caps", &hdmi_output_mode_capacity_);
   if (ret) {
-    ALOGW("Could not get hdmi_output_format property\n");
+    ALOGW("Could not get color_format_caps property\n");
+    ret = drm_->GetConnectorProperty(*this, "hdmi_output_mode_capacity", &hdmi_output_mode_capacity_);
+    if (ret) {
+      ALOGW("Could not get hdmi_output_colorimetry property\n");
+    }
+  }
+
+  ret = drm_->GetConnectorProperty(*this, "color_depth_caps", &hdmi_color_depth_capacity_);
+  if (ret) {
+    ALOGW("Could not get color_depth_caps property\n");
+    ret = drm_->GetConnectorProperty(*this, "hdmi_color_depth_capacity", &hdmi_color_depth_capacity_);
+    if (ret) {
+      ALOGW("Could not get hdmi_output_format property\n");
+    }
   }
 
   ret = drm_->GetConnectorProperty(*this, "CONNECTOR_ID", &connector_id_);
@@ -135,13 +144,22 @@ int DrmConnector::UpdateModes() {
   }
   modes_.swap(new_modes);
 
-  ret = drm_->GetConnectorProperty(*this, "hdmi_output_mode_capacity", &hdmi_output_mode_capacity_);
-  if (ret)
-    ALOGW("UpdateModes Could not get hdmi_output_colorimetry property\n");
-
-  ret = drm_->GetConnectorProperty(*this, "hdmi_color_depth_capacity", &hdmi_color_depth_capacity_);
+  ret = drm_->GetConnectorProperty(*this, "color_format_caps", &hdmi_output_mode_capacity_);
   if (ret) {
-    ALOGW("UpdateModes Could not get hdmi_output_format property\n");
+    ALOGW("UpdateModes Could not get color_format_caps property\n");
+    ret = drm_->GetConnectorProperty(*this, "hdmi_output_mode_capacity", &hdmi_output_mode_capacity_);
+    if (ret) {
+      ALOGW("UpdateModes Could not get hdmi_output_colorimetry property\n");
+    }
+  }
+
+  ret = drm_->GetConnectorProperty(*this, "color_depth_caps", &hdmi_color_depth_capacity_);
+  if (ret) {
+    ALOGW("UpdateModes Could not get color_depth_caps property\n");
+    ret = drm_->GetConnectorProperty(*this, "hdmi_color_depth_capacity", &hdmi_color_depth_capacity_);
+    if (ret) {
+      ALOGW("UpdateModes Could not get hdmi_output_format property\n");
+    }
   }
   return 0;
 }
