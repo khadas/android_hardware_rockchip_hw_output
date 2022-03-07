@@ -38,6 +38,14 @@ __BEGIN_DECLS
 
 #define HW_OUTPUT_DEFAULT_DEVICE "hw_output_device"
 
+#define HW_OUTPUT_VALUE_HDR10_MASK 0x04
+
+#define HW_OUTPUT_VALUE_HLG_MASK 0x08
+
+#define HW_OUTPUT_FOR_FRAMEWORK_HDR10_MASK 0x01
+
+#define HW_OUTPUT_FOR_FRAMEWORK_HLG_MASK 0x04
+
 /*****************************************************************************/
 
 /*
@@ -354,7 +362,13 @@ typedef struct hw_output_device {
 	int (*getBcsh)(struct hw_output_device* dev,
          int dpy, uint32_t* bcshs);
 
-	drm_mode_t* (*getDisplayModes)(struct hw_output_device* dev,
+    int (*getModeState)(struct hw_output_device *dev, const char *mode, char* state);
+
+    int (*setModeState)(struct hw_output_device *dev, const char *mode, const char *state);
+
+    int (*getHdrResolutionSupported)(struct hw_output_device *dev, int dpy, const char* mode, uint32_t* hdr_state);
+
+    drm_mode_t* (*getDisplayModes)(struct hw_output_device* dev,
          int dpy, uint32_t* size);
 
 	void (*hotplug)(struct hw_output_device* dev);

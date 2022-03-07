@@ -1062,6 +1062,79 @@ static connector_info_t* hw_output_get_connector_info(struct hw_output_device* d
     return connector_info;
 }
 
+static int hw_output_get_mode_state(struct hw_output_device *, const char* mode, char *state)
+{
+    property_get(mode, state, "");
+    ALOGD("%s:%d mode = %s, state = %s\n", __FUNCTION__, __LINE__, mode, state);
+    return 0;
+}
+
+static int hw_output_set_mode_state(struct hw_output_device *, const char* mode, const char* state)
+{
+    int ret = property_set(mode, state);
+    updateTimeline();
+    ALOGD("%s:%d mode = %s, state = %s, ret = %d\n", __FUNCTION__, __LINE__, mode, state, ret);
+    return ret;
+}
+
+static int hw_output_get_hdr_resolution_supported(struct hw_output_device *dev, int dpy, const char *mode, uint32_t* hdr_state)
+{
+    hw_output_private_t *priv = (hw_output_private_t *)dev;
+    DrmConnector *mCurConnector = getValidDrmConnector(priv, dpy);
+    drmModeObjectPropertiesPtr props;
+    drmModePropertyBlobPtr blob;
+    struct hdr_static_metadata* blob_data = nullptr;
+    bool found = false;
+    int value;
+
+    *hdr_state = 0;
+
+    if (mCurConnector == NULL)
+        return -1;
+    props = drmModeObjectGetProperties(priv->drm_->fd(), mCurConnector->id(), DRM_MODE_OBJECT_CONNECTOR);
+    for (int i = 0; !found && (size_t)i < props->count_props; ++i)
+    {
+        drmModePropertyPtr p = drmModeGetProperty(priv->drm_->fd(), props->props[i]);
+        if (p && !strcmp(p->name, "HDR_PANEL_METADATA"))
+        {
+            if (!drm_property_type_is(p, DRM_MODE_PROP_BLOB))
+            {
+                ALOGE("%s:%d HDR_PANEL_METADATA property is not blob type", __FUNCTION__, __LINE__);
+                drmModeFreeProperty(p);
+                drmModeFreeObjectProperties(props);
+                return -1;
+            }
+
+            if (!p->count_blobs)
+                value = props->prop_values[i];
+            else
+                value = p->blob_ids[0];
+
+            blob = drmModeGetPropertyBlob(priv->drm_->fd(), value);
+            if (!blob)
+            {
+                ALOGE("%s:line=%d, blob is null", __FUNCTION__, __LINE__);
+                drmModeFreeProperty(p);
+                drmModeFreeObjectProperties(props);
+                return -1;
+            }
+
+            blob_data = (struct hdr_static_metadata *)blob->data;
+            found = true;
+            *hdr_state = blob_data->eotf & HW_OUTPUT_VALUE_HDR10_MASK ? *hdr_state | HW_OUTPUT_FOR_FRAMEWORK_HDR10_MASK : *hdr_state;
+            *hdr_state = blob_data->eotf & HW_OUTPUT_VALUE_HLG_MASK ? *hdr_state | HW_OUTPUT_FOR_FRAMEWORK_HLG_MASK : *hdr_state;
+            ALOGD("%s:%d HDR_PANEL_METADATA property is found , mode = %s, hdr_static_metadata.eotf = %d, hdr_state = %d", __FUNCTION__, __LINE__, mode, blob_data->eotf, *hdr_state);
+
+            drmModeFreePropertyBlob(blob);
+        }
+        drmModeFreeProperty(p);
+        if (found)
+            break;
+    }
+    drmModeFreeObjectProperties(props);
+    return found ? 0 : -1;
+}
+
 static int hw_output_device_open(const struct hw_module_t* module,
         const char* name, struct hw_device_t** device)
 {
@@ -1105,6 +1178,9 @@ static int hw_output_device_open(const struct hw_module_t* module,
         dev->device.set3DLut = hw_output_set_3d_lut;
         dev->device.getConnectorInfo = hw_output_get_connector_info;
         dev->device.updateDispHeader = hw_output_update_disp_header;
+        dev->device.getModeState = hw_output_get_mode_state;
+        dev->device.setModeState = hw_output_set_mode_state;
+        dev->device.getHdrResolutionSupported = hw_output_get_hdr_resolution_supported;
         *device = &dev->device.common;
         status = 0;
     }
