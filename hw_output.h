@@ -298,6 +298,23 @@ typedef struct hw_stream {
     };
 } hw_stream_t;
 
+enum COLOR_FORMAT {
+    RGB = 0,
+    YCBCR444 = 1,
+    YCBCR422 = 2,
+    YCBCR420 = 3,
+    YCBCR_HIGH_SUBSAMPLING = 4,
+    YCBCR_LOW_SUBSAMPLING = 5,
+    INVALID_OUTPUT = 6,
+};
+
+enum COLOR_DEPTH {
+    AUTOMATIC = 0,
+    DEPTH_18BIT = 6,
+    DEPTH_24BIT = 8,
+    DEPTH_30BIT = 10,
+};
+
 /*
  * Every device data structure must begin with hw_device_t
  * followed by module specific public methods and attributes.

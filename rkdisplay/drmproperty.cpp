@@ -43,6 +43,10 @@ void DrmProperty::Init(drmModePropertyPtr p, uint64_t value) {
   name_ = p->name;
   value_ = value;
 
+  values_.clear();
+  enums_.clear();
+  blob_ids_.clear();
+
   for (int i = 0; i < p->count_values; ++i)
     values_.push_back(p->values[i]);
 
@@ -94,10 +98,7 @@ int DrmProperty::value(uint64_t *value) const {
       return 0;
 
     case DRM_PROPERTY_TYPE_ENUM:
-      if (value_ >= enums_.size())
-        return -ENOENT;
-
-      *value = enums_[value_].value_;
+      *value = value_;
       return 0;
 
     case DRM_PROPERTY_TYPE_OBJECT:

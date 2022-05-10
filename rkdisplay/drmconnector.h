@@ -63,6 +63,8 @@ class DrmConnector {
 
   const DrmProperty &dpms_property() const;
   const DrmProperty &crtc_id_property() const;
+  const DrmProperty &color_depth_property() const;
+  const DrmProperty &color_format_property() const;
   const DrmProperty &hdmi_output_mode_capacity_property() const;
   const DrmProperty &hdmi_output_depth_capacity_property() const;
   const std::vector<DrmEncoder *> &possible_encoders() const {
@@ -111,6 +113,8 @@ class DrmConnector {
   DrmProperty crtc_id_property_;
   DrmProperty connector_id_;
 
+  DrmProperty color_format_property_;
+  DrmProperty color_depth_property_;
   DrmProperty hdmi_output_mode_capacity_;
   DrmProperty hdmi_color_depth_capacity_;
 
