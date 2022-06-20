@@ -85,6 +85,8 @@ int DrmGamma::set_3x1d_gamma(int fd, unsigned crtc_id, uint32_t size, uint16_t* 
 	}
 	drmModeCreatePropertyBlob(fd, gamma_lut, sizeof(gamma_lut), &blob_id);
 	ret = drmModeObjectSetProperty(fd, crtc_id, DRM_MODE_OBJECT_CRTC, property_id, blob_id);
+	drmModeDestroyPropertyBlob(fd, blob_id);
+	drmModeFreeObjectProperties(props);
 	return ret;
 }
 
@@ -106,6 +108,8 @@ int DrmGamma::set_cubic_lut(int fd, unsigned crtc_id, uint32_t size, uint16_t* r
 	}
 	drmModeCreatePropertyBlob(fd, cubic_lut, sizeof(cubic_lut), &blob_id);
 	ret = drmModeObjectSetProperty(fd, crtc_id, DRM_MODE_OBJECT_CRTC, property_id, blob_id);
+	drmModeDestroyPropertyBlob(fd, blob_id);
+	drmModeFreeObjectProperties(props);
 	return ret;
 }
 
