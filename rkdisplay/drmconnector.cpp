@@ -57,20 +57,6 @@ int DrmConnector::Init() {
     return ret;
   }
 
-  ret = drm_->GetConnectorProperty(*this, "color_depth", &color_depth_property_);
-  if (ret) {
-    ALOGW("Could not get color_depth property\n");
-  }
-
-  uint64_t color_depth = 0;
-  color_depth_property().value(&color_depth);
-  ALOGW("color_depth_property_: name %lu ", (unsigned long)color_depth);
-
-  ret = drm_->GetConnectorProperty(*this, "color_format", &color_format_property_);
-  if (ret) {
-    ALOGW("Could not get color_format property\n");
-  }
-
   ret = drm_->GetConnectorProperty(*this, "color_format_caps", &hdmi_output_mode_capacity_);
   if (ret) {
     ALOGW("Could not get color_format_caps property\n");
@@ -158,20 +144,6 @@ int DrmConnector::UpdateModes() {
   }
   modes_.swap(new_modes);
 
-
-  ret = drm_->GetConnectorProperty(*this, "color_depth", &color_depth_property_);
-  if (ret) {
-    ALOGW("Could not get color_depth property\n");
-  }
-  uint64_t color_depth = 0;
-  color_depth_property().value(&color_depth);
-  ALOGW("color_depth_property_: name %lu ", (unsigned long)color_depth);
-
-  ret = drm_->GetConnectorProperty(*this, "color_format", &color_format_property_);
-  if (ret) {
-    ALOGW("Could not get color_format property\n");
-  }
-
   ret = drm_->GetConnectorProperty(*this, "color_format_caps", &hdmi_output_mode_capacity_);
   if (ret) {
     ALOGW("UpdateModes Could not get color_format_caps property\n");
@@ -241,14 +213,6 @@ uint32_t DrmConnector::connector_id() {
   uint64_t id=0;
   connector_id_.value(&id);
   return (uint32_t)id;
-}
-
-const DrmProperty &DrmConnector::color_depth_property() const {
-  return color_depth_property_;
-}
-
-const DrmProperty &DrmConnector::color_format_property() const {
-  return color_format_property_;
 }
 
 const DrmProperty &DrmConnector::hdmi_output_mode_capacity_property() const {
