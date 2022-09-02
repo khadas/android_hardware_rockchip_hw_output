@@ -470,12 +470,14 @@ static int hw_output_initialize(struct hw_output_device* dev, void* data)
             for (auto &conn : priv->drm_->connectors())
                 mGlobalConns.insert(std::make_pair(id++, conn.get()));
         } else {
-            int id=1;
+            int id=0;
             for (auto &conn : priv->drm_->connectors()) {
-                if (conn->possible_displays() & HWC_DISPLAY_PRIMARY_BIT)
+                // 同Hwc2相同处理方式，不区分主副屏
+                mGlobalConns.insert(std::make_pair(id++, conn.get()));
+                /* if (conn->possible_displays() & HWC_DISPLAY_PRIMARY_BIT)
                     mGlobalConns.insert(std::make_pair(HWC_DISPLAY_PRIMARY, conn.get()));
                 else
-                    mGlobalConns.insert(std::make_pair(id++, conn.get()));
+                    mGlobalConns.insert(std::make_pair(id++, conn.get())); */
             }
         }
         priv->mBaseParmeter->set_drm_connectors(mGlobalConns);
@@ -483,7 +485,7 @@ static int hw_output_initialize(struct hw_output_device* dev, void* data)
         if (priv->primary == NULL) {
             for (auto &conn : priv->drm_->connectors()) {
                 if ((conn->possible_displays() & HWC_DISPLAY_PRIMARY_BIT)) {
-                    //mGlobalConns[HWC_DISPLAY_PRIMARY] = conn.get();
+                    // mGlobalConns[HWC_DISPLAY_PRIMARY] = conn.get();
                 }
                 if ((conn->possible_displays() & HWC_DISPLAY_EXTERNAL_BIT) && conn->state() == DRM_MODE_CONNECTED) {
                     priv->drm_->SetExtendDisplay(conn.get());
