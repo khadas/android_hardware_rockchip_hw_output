@@ -337,9 +337,42 @@ int BaseParameterV1::get_overscan_info(unsigned int connector_type, unsigned int
 
 int BaseParameterV1::set_overscan_info(unsigned int connector_type, unsigned int connector_id, struct overscan_info *overscan_info)
 {
-    UN_USED(connector_type);
-    UN_USED(connector_id);
-    UN_USED(overscan_info);
+    if (!hasInitial) {
+        ALOGW("baseparamter hasInitial false");
+        return -EINVAL;
+    }
+
+    int file;
+    int offset = 0;
+    const char *filepath = GetBaseparameterFile();
+
+    if (!mBaseParameterInfos || !filepath) {
+        ALOGD("hw_output: saveConfig filepath is NULL mBaseParameterInfo=%p*********", mBaseParameterInfos);
+        sync();
+        return -ENOENT;
+    }
+
+    file = open(filepath, O_RDWR);
+    if (file < 0) {
+        ALOGW("base paramter file can not be opened");
+        sync();
+        return -EIO;
+    }
+
+    struct disp_info_v1* info_v1;
+    if (getDisplayId(connector_type, connector_id) == HWC_DISPLAY_PRIMARY) {
+        info_v1 = &mBaseParameterInfos->main;
+        offset = 0;
+    } else {
+        info_v1 = &mBaseParameterInfos->aux;
+        offset = BASE_OFFSET;
+    }
+
+    memcpy(&info_v1->scan, overscan_info, sizeof(info_v1->scan));
+    lseek(file, offset, SEEK_SET);
+    write(file, (char*)(info_v1), sizeof(struct disp_info_v1));
+    close(file);
+    sync();
     return 0;
 }
 
