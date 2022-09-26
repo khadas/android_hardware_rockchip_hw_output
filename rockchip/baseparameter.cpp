@@ -360,7 +360,19 @@ int BaseParameterV1::set_overscan_info(unsigned int connector_type, unsigned int
     }
 
     struct disp_info_v1* info_v1;
-    if (getDisplayId(connector_type, connector_id) == HWC_DISPLAY_PRIMARY) {
+    std::string propertyStr;
+    char mainProperty[100];
+    propertyStr = "vendor.hwc.device.primary";
+    property_get(propertyStr.c_str(), mainProperty, "");
+    ALOGD("mainProperty = %s , connector_id = %d\n", mainProperty, connector_id);
+    if ((connector_type == DRM_MODE_CONNECTOR_HDMIA && strstr(mainProperty, "HDMI-A"))
+        || (connector_type == DRM_MODE_CONNECTOR_HDMIB && strstr(mainProperty, "HDMI-B"))
+        || (connector_type == DRM_MODE_CONNECTOR_TV && strstr(mainProperty, "TV"))
+        || (connector_type == DRM_MODE_CONNECTOR_VGA && strstr(mainProperty, "VGA"))
+        || (connector_type == DRM_MODE_CONNECTOR_DisplayPort && strstr(mainProperty, "DP"))
+        || (connector_type == DRM_MODE_CONNECTOR_eDP && strstr(mainProperty, "eDP"))
+        || (connector_type == DRM_MODE_CONNECTOR_VIRTUAL && strstr(mainProperty, "Virtual"))
+        || (connector_type == DRM_MODE_CONNECTOR_DSI && strstr(mainProperty, "DSI"))) {
         info_v1 = &mBaseParameterInfos->main;
         offset = 0;
     } else {

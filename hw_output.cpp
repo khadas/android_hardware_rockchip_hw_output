@@ -166,7 +166,18 @@ static std::string getPropertySuffix(hw_output_private_t *priv, std::string head
             suffix += std::to_string(id);
         }
     } else {
-        if (dpy == HWC_DISPLAY_PRIMARY)
+        std::string propertyStr = "vendor.hwc.device.primary";
+        char mainProperty[100];
+        property_get(propertyStr.c_str(), mainProperty, "");
+        ALOGE("mainProperty = %s\n", mainProperty);
+        if ((conn->get_type() == DRM_MODE_CONNECTOR_HDMIA && strstr(mainProperty, "HDMI-A"))
+            || (conn->get_type() == DRM_MODE_CONNECTOR_HDMIB && strstr(mainProperty, "HDMI-B"))
+            || (conn->get_type() == DRM_MODE_CONNECTOR_TV && strstr(mainProperty, "TV"))
+            || (conn->get_type() == DRM_MODE_CONNECTOR_VGA && strstr(mainProperty, "VGA"))
+            || (conn->get_type() == DRM_MODE_CONNECTOR_DisplayPort && strstr(mainProperty, "DP"))
+            || (conn->get_type() == DRM_MODE_CONNECTOR_eDP && strstr(mainProperty, "eDP"))
+            || (conn->get_type() == DRM_MODE_CONNECTOR_VIRTUAL && strstr(mainProperty, "Virtual"))
+            || (conn->get_type() == DRM_MODE_CONNECTOR_DSI && strstr(mainProperty, "DSI")))
             suffix += "main";
         else
             suffix += "aux";
