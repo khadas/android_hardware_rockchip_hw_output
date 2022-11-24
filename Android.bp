@@ -38,5 +38,5 @@ cc_library_shared {
     include_dirs: [
       "hardware/rockchip/libbaseparameter",
     ],
-    cflags: ["-Wall", "-Werror"],
+    cflags: ["-Wall", "-Werror", "-Wno-sign-compare", "-Wno-format"],
 }
