@@ -364,11 +364,13 @@ DrmConnector *DrmResources::GetConnectorFromType(int display_type) const {
 }
 
 DrmCrtc *DrmResources::GetCrtcFromConnector(DrmConnector *conn) const {
-   if (conn->encoder())
-     return conn->encoder()->crtc();
-   return NULL;
-}
+  if (!conn)
+    return NULL;
 
+  if (conn->encoder())
+    return conn->encoder()->crtc();
+  return NULL;
+}
 
 uint32_t DrmResources::next_mode_id() {
   return ++mode_id_;

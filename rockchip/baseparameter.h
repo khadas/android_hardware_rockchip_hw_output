@@ -36,6 +36,10 @@ public:
     virtual int set_gamma_lut_data(unsigned int connector_type, unsigned int connector_id, struct gamma_lut_data *data) = 0;
     virtual int get_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data) = 0;
     virtual int set_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data) = 0;
+    virtual int set_csc_info(unsigned int connector_type, unsigned int connector_id, struct csc_info *info) = 0;
+    virtual int get_csc_info(unsigned int connector_type, unsigned int connector_id, struct csc_info *info) = 0;
+    virtual int set_acm_data(unsigned int connector_type, unsigned int connector_id, struct acm_data *data) = 0;
+    virtual int get_acm_data(unsigned int connector_type, unsigned int connector_id, struct acm_data *data) = 0;
     virtual int set_disp_header(unsigned int index, unsigned int connector_type, unsigned int connector_id) = 0;
     virtual bool validate() = 0;
     virtual int get_all_disp_header(struct disp_header *headers) = 0;
@@ -68,6 +72,10 @@ public:
     int get_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data);
     int set_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data);
     int set_disp_header(unsigned int index, unsigned int connector_type, unsigned int connector_id);
+    int set_csc_info(unsigned int connector_type, unsigned int connector_id, struct csc_info *info) { return 0; };
+    int get_csc_info(unsigned int connector_type, unsigned int connector_id, struct csc_info *info) { return 0; };
+    int set_acm_data(unsigned int connector_type, unsigned int connector_id, struct acm_data *data) { return 0; };
+    int get_acm_data(unsigned int connector_type, unsigned int connector_id, struct acm_data *data) { return 0; };
     bool validate();
     int get_all_disp_header(struct disp_header *headers);
     void set_drm_connectors(std::map<int,DrmConnector*> conns);
@@ -103,6 +111,10 @@ public:
     virtual int set_gamma_lut_data(unsigned int connector_type, unsigned int connector_id, struct gamma_lut_data *data);
     virtual int get_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data);
     virtual int set_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data);
+    int set_csc_info(unsigned int connector_type, unsigned int connector_id, struct csc_info *info);
+    int get_csc_info(unsigned int connector_type, unsigned int connector_id, struct csc_info *info);
+    int set_acm_data(unsigned int connector_type, unsigned int connector_id, struct acm_data *data);
+    int get_acm_data(unsigned int connector_type, unsigned int connector_id, struct acm_data *data);
     virtual int set_disp_header(unsigned int index, unsigned int connector_type, unsigned int connector_id);
     virtual bool validate();
     virtual int get_all_disp_header(struct disp_header *headers);

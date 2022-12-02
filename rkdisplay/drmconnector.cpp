@@ -54,7 +54,6 @@ int DrmConnector::Init() {
   ALOGD("crtc_id_property_: name %s ", crtc_id_property_.name().c_str());
   if (ret) {
     ALOGE("Could not get CRTC_ID property\n");
-    return ret;
   }
 
   ret = drm_->GetConnectorProperty(*this, "color_format_caps", &hdmi_output_mode_capacity_);
@@ -161,6 +160,7 @@ int DrmConnector::UpdateModes() {
       ALOGW("UpdateModes Could not get hdmi_output_format property\n");
     }
   }
+
   return 0;
 }
 

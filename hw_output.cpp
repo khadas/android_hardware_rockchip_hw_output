@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <malloc.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <drm_fourcc.h>
@@ -39,7 +40,7 @@
 #include "rkdisplay/drmresources.h"
 #include "rkdisplay/drmmode.h"
 #include "rkdisplay/drmconnector.h"
-#include "rkdisplay/drmgamma.h"
+#include "rkdisplay/hwoutput_property.h"
 #include "rockchip/baseparameter.h"
 
 using namespace android;
@@ -575,7 +576,7 @@ static int hw_output_set_gamma(struct hw_output_device* dev, int dpy, uint32_t s
     if (mConnector)
         crtc_id = priv->drm_->GetCrtcFromConnector(mConnector)->id();
 
-    ret = DrmGamma::set_3x1d_gamma(priv->drm_->fd(), crtc_id, size, r, g, b);
+    ret = HwOutputProperty::set_3x1d_gamma(priv->drm_->fd(), crtc_id, size, r, g, b);
     if (ret < 0)
         ALOGE("fail to SetGamma %d(%s)", ret, strerror(errno));
     if(ret == 0){
@@ -601,7 +602,7 @@ static int hw_output_set_3d_lut(struct hw_output_device* dev, int dpy, uint32_t 
 
     if (mConnector)
         crtc_id = priv->drm_->GetCrtcFromConnector(mConnector)->id();
-    ret = DrmGamma::set_cubic_lut(priv->drm_->fd(), crtc_id, size, r, g, b);
+    ret = HwOutputProperty::set_cubic_lut(priv->drm_->fd(), crtc_id, size, r, g, b);
     if (ret < 0)
         ALOGE("fail to set 3d lut %d(%s)", ret, strerror(errno));
     if(ret == 0){
@@ -622,19 +623,33 @@ static int hw_output_set_brightness(struct hw_output_device* dev, int dpy, int b
     hw_output_private_t* priv = (hw_output_private_t*)dev;
     BaseParameter* mBaseParameter = priv->mBaseParmeter;
     DrmConnector* conn = getValidDrmConnector(priv, dpy);
+    DrmCrtc* crtc;
     char property[PROPERTY_VALUE_MAX];
     char tmp[128];
     std::string propertyStr;
+
+    if (!conn)
+        return 0;
 
     propertyStr = getPropertySuffix(priv, "persist.vendor.brightness.", dpy);
     sprintf(tmp, "%d", brightness);
     property_get(propertyStr.c_str(), property, "50");
 
-    if (atoi(property) != brightness) {
-        property_set(propertyStr.c_str(), tmp);
-        updateTimeline();
-        mBaseParameter->set_brightness(conn->get_type(), conn->connector_id(), brightness);
+    crtc = priv->drm_->GetCrtcFromConnector(conn);
+    if (crtc && crtc->csc_property().id()) {
+        struct csc_info info;
+        mBaseParameter->get_csc_info(conn->get_type(), conn->connector_id(), &info);
+        info.brightness = ceil((float)brightness / 100 * 511.f);
+        HwOutputProperty::set_csc_info(priv->drm_->fd(), crtc->id(), &info);
+    } else {
+        if (atoi(property) != brightness) {
+            property_set(propertyStr.c_str(), tmp);
+            updateTimeline();
+        }
     }
+
+     mBaseParameter->set_brightness(conn->get_type(), conn->connector_id(), brightness);
+
     return 0;
 }
 
@@ -643,19 +658,33 @@ static int hw_output_set_contrast(struct hw_output_device* dev, int dpy, int con
     hw_output_private_t* priv = (hw_output_private_t*)dev;
     BaseParameter* mBaseParameter = priv->mBaseParmeter;
     DrmConnector* conn = getValidDrmConnector(priv, dpy);
+    DrmCrtc* crtc;
     char property[PROPERTY_VALUE_MAX];
     char tmp[128];
     std::string propertyStr;
+
+    if (!conn)
+        return 0;
 
     sprintf(tmp, "%d", contrast);
     propertyStr = getPropertySuffix(priv, "persist.vendor.contrast.", dpy);
     property_get(propertyStr.c_str(), property, "50");
 
-    if (atoi(property) != contrast) {
-        property_set(propertyStr.c_str(), tmp);
-        updateTimeline();
-        mBaseParameter->set_contrast(conn->get_type(), conn->connector_id(), contrast);
+    crtc = priv->drm_->GetCrtcFromConnector(conn);
+    if (crtc && crtc->csc_property().id()) {
+        struct csc_info info;
+        mBaseParameter->get_csc_info(conn->get_type(), conn->connector_id(), &info);
+        info.contrast = ceil((float)contrast / 100 * 511.f);
+        HwOutputProperty::set_csc_info(priv->drm_->fd(), crtc->id(), &info);
+    } else {
+        if (atoi(property) != contrast) {
+            property_set(propertyStr.c_str(), tmp);
+            updateTimeline();
+        }
     }
+
+    mBaseParameter->set_contrast(conn->get_type(), conn->connector_id(), contrast);
+
     return 0;
 }
 
@@ -664,19 +693,33 @@ static int hw_output_set_sat(struct hw_output_device* dev, int dpy, int sat)
     hw_output_private_t* priv = (hw_output_private_t*)dev;
     BaseParameter* mBaseParameter = priv->mBaseParmeter;
     DrmConnector* conn = getValidDrmConnector(priv, dpy);
+    DrmCrtc* crtc;
     char property[PROPERTY_VALUE_MAX];
     char tmp[128];
     std::string propertyStr;
+
+    if (!conn)
+        return 0;
 
     sprintf(tmp, "%d", sat);
     propertyStr = getPropertySuffix(priv, "persist.vendor.saturation.", dpy);
     property_get(propertyStr.c_str(), property, "50");
 
-    if (atoi(property) != sat) {
-        property_set(propertyStr.c_str(), tmp);
-        updateTimeline();
-        mBaseParameter->set_saturation(conn->get_type(), conn->connector_id(), sat);
+    crtc = priv->drm_->GetCrtcFromConnector(conn);
+    if (crtc && crtc->csc_property().id()) {
+        struct csc_info info;
+        mBaseParameter->get_csc_info(conn->get_type(), conn->connector_id(), &info);
+        info.saturation = ceil((float)sat / 100 * 511.f);
+        HwOutputProperty::set_csc_info(priv->drm_->fd(), crtc->id(), &info);
+    } else {
+        if (atoi(property) != sat) {
+            property_set(propertyStr.c_str(), tmp);
+            updateTimeline();
+        }
     }
+
+    mBaseParameter->set_saturation(conn->get_type(), conn->connector_id(), sat);
+
     return 0;
 }
 
@@ -684,21 +727,108 @@ static int hw_output_set_hue(struct hw_output_device* dev, int dpy, int hue)
 {
     hw_output_private_t* priv = (hw_output_private_t*)dev;
     BaseParameter* mBaseParameter = priv->mBaseParmeter;
-    DrmConnector* conn = getValidDrmConnector(priv, dpy);
     char property[PROPERTY_VALUE_MAX];
     char tmp[128];
+    DrmConnector* conn = getValidDrmConnector(priv, dpy);
+    DrmCrtc* crtc;
+    int ret = -1;
     std::string propertyStr;
+
+    if (!conn)
+        return ret;
 
     sprintf(tmp, "%d", hue);
     propertyStr = getPropertySuffix(priv, "persist.vendor.hue.", dpy);
     property_get(propertyStr.c_str(), property, "50");
 
-    if (atoi(property) != hue) {
-        property_set(propertyStr.c_str(), tmp);
-        updateTimeline();
-        mBaseParameter->set_hue(conn->get_type(), conn->connector_id(), hue);
+    crtc = priv->drm_->GetCrtcFromConnector(conn);
+    if (crtc && crtc->csc_property().id()) {
+        struct csc_info info;
+        mBaseParameter->get_csc_info(conn->get_type(), conn->connector_id(), &info);
+        info.hue =  ceil((float)hue / 100 * 511.f);
+        ret = HwOutputProperty::set_csc_info(priv->drm_->fd(), crtc->id(), &info);
+    } else {
+        if (atoi(property) != hue) {
+            property_set(propertyStr.c_str(), tmp);
+            updateTimeline();
+        }
     }
-    return 0;
+
+    ret = mBaseParameter->set_hue(conn->get_type(), conn->connector_id(), hue);
+
+    return ret;
+}
+
+static int hw_output_set_csc_info(struct hw_output_device* dev, int dpy, struct csc_info* info)
+{
+    hw_output_private_t* priv = (hw_output_private_t*)dev;
+    BaseParameter* mBaseParameter = priv->mBaseParmeter;
+    DrmConnector* mConnector = getValidDrmConnector(priv, dpy);
+    DrmCrtc* crtc;
+    int ret = -1;
+
+    if (!mConnector)
+        return ret;
+
+    crtc = priv->drm_->GetCrtcFromConnector(mConnector);
+    if (crtc && crtc->csc_property().id())
+        HwOutputProperty::set_csc_info(priv->drm_->fd(), crtc->id(), info);
+
+    ret = mBaseParameter->set_csc_info(mConnector->get_type(), mConnector->connector_id(), info);
+
+    return ret;
+}
+
+static int hw_output_get_csc_info(struct hw_output_device* dev, int dpy, struct csc_info* info)
+{
+    hw_output_private_t* priv = (hw_output_private_t*)dev;
+    BaseParameter* mBaseParameter = priv->mBaseParmeter;
+    DrmConnector* mConnector = getValidDrmConnector(priv, dpy);
+    int ret = -1;
+
+    if (!info)
+        return ret;
+
+    ret = mBaseParameter->get_csc_info(mConnector->get_type(), mConnector->connector_id(), info);
+
+    return ret;
+}
+
+
+static int hw_output_set_acm_data(struct hw_output_device* dev, int dpy, struct acm_data* data)
+{
+    hw_output_private_t* priv = (hw_output_private_t*)dev;
+    BaseParameter* mBaseParameter = priv->mBaseParmeter;
+    DrmConnector* mConnector = getValidDrmConnector(priv, dpy);
+    DrmCrtc* crtc = NULL;
+    int ret = -1;
+
+    if (!data)
+        return ret;
+
+    if (mConnector)
+        crtc = priv->drm_->GetCrtcFromConnector(mConnector);
+    if (crtc)
+        HwOutputProperty::set_acm_data(priv->drm_->fd(), crtc->id(), data);
+
+    ret = mBaseParameter->set_acm_data(mConnector->get_type(), mConnector->connector_id(), data);
+
+    return ret;
+}
+
+static int hw_output_get_acm_data(struct hw_output_device* dev, int dpy, struct acm_data* data)
+{
+    hw_output_private_t* priv = (hw_output_private_t*)dev;
+    BaseParameter* mBaseParameter = priv->mBaseParmeter;
+    DrmConnector* mConnector = getValidDrmConnector(priv, dpy);
+    int ret = -1;
+
+    if (!data)
+        return ret;
+
+    ret = mBaseParameter->get_acm_data(mConnector->get_type(), mConnector->connector_id(), data);
+
+    return ret;
 }
 
 static int hw_output_set_screen_scale(struct hw_output_device* dev, int dpy, int direction, int value)
@@ -1194,6 +1324,12 @@ static int hw_output_device_open(const struct hw_module_t* module,
         dev->device.getModeState = hw_output_get_mode_state;
         dev->device.setModeState = hw_output_set_mode_state;
         dev->device.getHdrResolutionSupported = hw_output_get_hdr_resolution_supported;
+
+        dev->device.setCscInfo = hw_output_set_csc_info;
+        dev->device.getCscInfo = hw_output_get_csc_info;
+        dev->device.setAcmData = hw_output_set_acm_data;
+        dev->device.getAcmData = hw_output_get_acm_data;
+
         *device = &dev->device.common;
         status = 0;
     }
