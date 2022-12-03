@@ -369,6 +369,7 @@ static void hw_output_hotplug_update(struct hw_output_device* dev){
     DrmConnector *mextend = NULL;
     DrmConnector *mprimary = NULL;
     int dpy = 0;
+    int index = 0;
 
     for (auto &conn : priv->drm_->connectors()) {
         drmModeConnection old_state = conn->state();
@@ -378,11 +379,14 @@ static void hw_output_hotplug_update(struct hw_output_device* dev){
         drmModeConnection cur_state = conn->state();
         ALOGD("old_state %d cur_state %d conn->get_type() %d", old_state, cur_state, conn->get_type());
 
-        if (cur_state == old_state)
+        if (cur_state == old_state) {
+            index++;
             continue;
+        }
         ALOGI("%s event  for connector %u\n",
                 cur_state == DRM_MODE_CONNECTED ? "Plug" : "Unplug", conn->id());
 
+        mGlobalConns[index] = conn.get();
         if (cur_state == DRM_MODE_CONNECTED) {
             if (conn->possible_displays() & HWC_DISPLAY_EXTERNAL_BIT) {
                 mextend = conn.get();
@@ -390,6 +394,7 @@ static void hw_output_hotplug_update(struct hw_output_device* dev){
                 mprimary = conn.get();
             }
         }
+        index++;
     }
 
     /*
