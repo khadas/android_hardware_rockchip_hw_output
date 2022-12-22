@@ -48,9 +48,8 @@ class DrmCrtc {
   const DrmProperty &right_margin_property() const;
   const DrmProperty &top_margin_property() const;
   const DrmProperty &bottom_margin_property() const;
-  const DrmProperty &csc_property() const;
-  const DrmProperty &acm_property() const;
   void dump_crtc(std::ostringstream *out) const;
+
 
   DrmResources *getDrmReoources()
   {
@@ -81,8 +80,6 @@ class DrmCrtc {
   DrmProperty top_margin_property_;
   DrmProperty right_margin_property_;
   DrmProperty bottom_margin_property_;
-  DrmProperty csc_property_;
-  DrmProperty acm_property_;
   drmModeCrtcPtr crtc_;
 };
 }

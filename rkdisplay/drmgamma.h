@@ -24,8 +24,6 @@
 #include "xf86drmMode.h"
 #include "drm_fourcc.h"
 
-#include "baseparameter_api.h"
-
 namespace android {
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -92,13 +90,11 @@ struct type_name {
 	const char *name;
 };
 
-class HwOutputProperty {
+class DrmGamma {
  public:
- HwOutputProperty();
- ~HwOutputProperty();
+ DrmGamma();
+ ~DrmGamma();
  static int set_3x1d_gamma(int fd, unsigned crtc_id, uint32_t size, uint16_t* r, uint16_t* g, uint16_t* b);
  static int set_cubic_lut(int fd, unsigned crtc_id, uint32_t size, uint16_t* r, uint16_t* g, uint16_t* b);
- static uint32_t set_csc_info(int fd,  unsigned crtc_id, struct csc_info* info);
- static uint32_t set_acm_data(int fd, unsigned crtc_id, struct acm_data* data);
 };
 }

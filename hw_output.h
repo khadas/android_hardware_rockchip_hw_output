@@ -378,11 +378,6 @@ typedef struct hw_output_device {
         int dpy,  uint32_t size, uint16_t* r, uint16_t* g, uint16_t* b);
 	connector_info_t* (*getConnectorInfo)(struct hw_output_device* dev, uint32_t* size);
 	int (*updateDispHeader)(struct hw_output_device* dev);
-
-    int (*setCscInfo)(struct hw_output_device *dev, int dpy, struct csc_info* info);
-    int (*getCscInfo)(struct hw_output_device *dev, int dpy, struct csc_info* info);
-    int (*setAcmData)(struct hw_output_device *dev, int dpy, struct acm_data* data);
-    int (*getAcmData)(struct hw_output_device *dev, int dpy, struct acm_data* data);
 } hw_output_device_t;
 /** convenience API for opening and closing a supported device */
 

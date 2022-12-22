@@ -132,29 +132,6 @@ int BaseParameterV2::set_cubic_lut_data(unsigned int connector_type, unsigned in
     return mBaseParmApi->set_cubic_lut_data(connector_type, connector_id, data);
 }
 
-int BaseParameterV2::set_csc_info(unsigned int connector_type, unsigned int connector_id, struct csc_info *info) {
-    if (mBaseParmApi == nullptr)
-        return -1;
-    return mBaseParmApi->set_csc_info(connector_type, connector_id, info);
-}
-
-int BaseParameterV2::get_csc_info(unsigned int connector_type, unsigned int connector_id, struct csc_info *info) {
-    if (mBaseParmApi == nullptr)
-        return -1;
-    return mBaseParmApi->get_csc_info(connector_type, connector_id, info);
-}
-int BaseParameterV2::set_acm_data(unsigned int connector_type, unsigned int connector_id, struct acm_data *data) {
-    if (mBaseParmApi == nullptr)
-        return -1;
-    return mBaseParmApi->set_acm_data(connector_type, connector_id, data);
-}
-
-int BaseParameterV2::get_acm_data(unsigned int connector_type, unsigned int connector_id, struct acm_data *data) {
-    if (mBaseParmApi == nullptr)
-        return -1;
-    return mBaseParmApi->get_acm_data(connector_type, connector_id, data);
-}
-
 int BaseParameterV2::set_disp_header(unsigned int index, unsigned int connector_type, unsigned int connector_id) {
     if (mBaseParmApi == nullptr)
         return -1;

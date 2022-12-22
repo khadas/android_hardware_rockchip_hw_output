@@ -85,16 +85,6 @@ int DrmCrtc::Init() {
     can_overscan_ = false;
   }
 
-  ret = drm_->GetCrtcProperty(*this, "POST_CSC_DATA", &csc_property_);
-  if (ret) {
-    ALOGE("Could not get POST_CSC_DATA property\n");
-  }
-
-  ret = drm_->GetCrtcProperty(*this, "ACM_LUT_DATA", &acm_property_);
-  if (ret) {
-    ALOGE("Could not get ACM_LUT_DATA property\n");
-  }
-
   return 0;
 }
 
@@ -136,14 +126,6 @@ const DrmProperty &DrmCrtc::top_margin_property() const {
 
 const DrmProperty &DrmCrtc::bottom_margin_property() const {
   return bottom_margin_property_;
-}
-
-const DrmProperty &DrmCrtc::csc_property() const {
-  return csc_property_;
-}
-
-const DrmProperty &DrmCrtc::acm_property() const {
-  return acm_property_;
 }
 
 void DrmCrtc::dump_crtc(std::ostringstream *out) const
