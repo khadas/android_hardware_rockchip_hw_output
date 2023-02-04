@@ -80,7 +80,7 @@ void DrmResources::ConfigurePossibleDisplays()
       for (auto &conn : connectors_) {
         display_name = connector_type_str(conn->get_type());
         display_name.append("-");
-        display_name.append(std::to_string(conn->connector_id() + 1));
+        display_name.append(std::to_string(conn->type_id()));
         if (!strcmp(connector_type_str(conn->get_type()), conn_name.c_str()) ||
           !strcmp(display_name.c_str(), conn_name.c_str()))
           conn->set_display_possible(HWC_DISPLAY_PRIMARY_BIT);
@@ -95,13 +95,14 @@ void DrmResources::ConfigurePossibleDisplays()
       for (auto &conn : connectors_) {
         display_name = connector_type_str(conn->get_type());
         display_name.append("-");
-        display_name.append(std::to_string(conn->connector_id() + 1));
+        display_name.append(std::to_string(conn->type_id()));
         if (!strcmp(connector_type_str(conn->get_type()), conn_name.c_str()) ||
           !strcmp(display_name.c_str(), conn_name.c_str()))
           conn->set_display_possible(conn->possible_displays() | HWC_DISPLAY_EXTERNAL_BIT);
       }
     }
   }
+
 }
 int DrmResources::Init() {
   char path[PROPERTY_VALUE_MAX];

@@ -77,6 +77,7 @@ class DrmConnector {
   void force_disconnect(bool force);
 
   uint32_t get_type() { return type_; }
+  uint32_t type_id() const { return type_id_; };
   int possible_displays() { return possible_displays_; }
 
   uint32_t mm_width() const;
@@ -96,6 +97,7 @@ class DrmConnector {
 
 
   uint32_t type_;
+  uint32_t type_id_;
   drmModeConnection state_;
   bool force_disconnect_;
 
