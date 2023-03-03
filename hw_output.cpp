@@ -386,6 +386,17 @@ static void hw_output_hotplug_update(struct hw_output_device* dev){
         ALOGI("%s event  for connector %u\n",
                 cur_state == DRM_MODE_CONNECTED ? "Plug" : "Unplug", conn->id());
 
+        for (DrmEncoder *enc : conn->possible_encoders()) {
+            for (DrmCrtc *crtc : enc->possible_crtcs()) {
+                if(conn->state() == DRM_MODE_CONNECTED) {
+                    enc->set_crtc(crtc);
+                    conn->set_encoder(enc);
+                } else {
+                    enc->set_crtc(NULL);
+                    conn->set_encoder(NULL);
+                }
+            }
+        }
         mGlobalConns[index] = conn.get();
         if (cur_state == DRM_MODE_CONNECTED) {
             if (conn->possible_displays() & HWC_DISPLAY_EXTERNAL_BIT) {
